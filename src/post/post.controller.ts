@@ -6,28 +6,40 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { PostService } from './post.service';
-import { CreatePostDto } from './dto/create-post.dto';
-import { ApiOkResponse } from '@nestjs/swagger';
-import { PageResponseDTO } from './dto/read-post.dto';
+import { CreatePostDto, CreatePostResponseDto } from './dto/create-post.dto';
+import {
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
+import { PostSearchDto, PostSearchResponseDto } from './dto/read-post.dto';
 
 @Controller('post')
+@ApiTags('게시판 API')
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
   @Post()
+  @ApiOperation({ summary: '게시글 작성 API', description: '게시글 생성' })
+  @ApiCreatedResponse({
+    description: '새로운 게시글 생성 성공.',
+    type: CreatePostResponseDto,
+  })
   create(@Body() createPostDto: CreatePostDto) {
-    return this.postService.create();
+    return this.postService.create(createPostDto);
   }
 
   @Get()
   @ApiOkResponse({
     description: 'Returns paginated items',
-    type: PageResponseDTO,
+    type: PostSearchResponseDto,
   })
-  findAll() {
-    return this.postService.findAll();
+  findAll(@Query() postSearchDto: PostSearchDto) {
+    return this.postService.findAll(postSearchDto);
   }
 
   @Get(':id')

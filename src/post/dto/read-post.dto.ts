@@ -1,44 +1,51 @@
 import {
   IsArray,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
+  Min,
 } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import * as moment from 'moment/moment';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class PostDataDto {
   @ApiProperty({ description: '게시글 id' })
-  @IsNotEmpty()
   @IsNumber()
-  id: number;
+  @Expose()
+  postId: number;
 
   @ApiProperty({ description: '게시글 타이틀' })
-  @IsNotEmpty()
   @IsString()
+  @Expose()
   title: string;
 
   @ApiProperty({ description: '게시글 작성자' })
   @IsNotEmpty()
   @IsString()
+  @Expose()
   author: string;
 
   @ApiProperty({ description: '게시글 작성 시간' })
+  @Expose()
+  @IsString()
   @Transform(({ value }) =>
     moment(new Date(value)).format('YYYY-MM-DD HH:mm:ss'),
   )
-  created_at: string;
+  createdAt: string;
 
   @ApiProperty({ description: '게시글 수정 시간' })
+  @Expose()
+  @IsString()
   @Transform(({ value }) => {
     return moment(new Date(value)).format('YYYY-MM-DD HH:mm:ss');
   })
-  updated_at: string;
+  updatedAt: string;
 }
 
-export class PageResponseDTO {
+export class PostSearchResponseDto {
   @ApiProperty({ description: 'Current page number' })
   @IsNumber()
   page: number;
@@ -49,7 +56,7 @@ export class PageResponseDTO {
 
   @ApiProperty({ description: 'Number of items per page' })
   @IsNumber()
-  pageSize: number;
+  limit: number;
 
   @ApiProperty({ description: 'Maximum number of pages' })
   @IsNumber()
@@ -57,33 +64,25 @@ export class PageResponseDTO {
 
   @ApiProperty({ type: [PostDataDto], description: 'List of results' })
   @IsArray()
-  results: PostDataDto[];
+  results: PostDataDto[] | null;
 }
 
-export class GetWorkDto {
-  @ApiProperty({ description: '게시글 타이틀', required: false })
+export class PostSearchDto {
+  @ApiProperty({ description: '작성자 명 검색 키워드', required: false })
   @IsOptional()
-  @Type(() => String)
-  title?: string | null;
+  @IsString()
+  readonly author?: string;
 
-  @ApiProperty({ description: '게시글 타이틀', required: false })
+  @ApiProperty({ description: '제목 검색 키워드', required: false })
   @IsOptional()
-  @Type(() => String)
-  title?: string | null;
-
-  @ApiProperty({
-    description: '작업상태 - ["전체", "작업중", "작업완료", "신규"]',
-    required: false,
-  })
-  @IsOptional()
-  @Type(() => String)
-  option?: string | null;
+  @IsString()
+  readonly title?: string;
 
   @ApiProperty({ description: '페이지', required: false, default: 1 })
   @IsOptional()
   @Transform(({ value }) => value ?? 1)
   @Type(() => Number)
-  @IsInt()
+  @IsInt({ message: '페이지는 정수형만 입력가능합니다.' })
   @Min(1)
   page?: number = 1;
 
@@ -91,7 +90,7 @@ export class GetWorkDto {
   @IsOptional()
   @Transform(({ value }) => value ?? 10)
   @Type(() => Number)
-  @IsInt()
+  @IsInt({ message: '페이지별 건수는 정수형만 입력가능합니다.' })
   @Min(1)
   limit?: number = 10;
 }
