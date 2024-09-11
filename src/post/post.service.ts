@@ -1,19 +1,28 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PostEntity } from '../entities/Post.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreatePostDto, CreatePostResponseDto } from './dto/create-post.dto';
-import { hashingPassword } from '../util/bcryptUtil';
+import { comparePassword, hashingPassword } from '../util/bcryptUtil';
 import {
-  PostDataDto,
+  PostDataResponseDto,
+  PostSearchDataDto,
   PostSearchDto,
   PostSearchResponseDto,
 } from './dto/read-post.dto';
-import { plainToInstance } from 'class-transformer';
+import { plainToClass, plainToInstance } from 'class-transformer';
+import { UpdatePostDto } from './dto/update-post.dto';
+import { DeletePostDto } from './dto/delete-post.dto';
+import { KeywordsService } from '../keywords/keywords.service';
 
 @Injectable()
 export class PostService {
   constructor(
+    private readonly keywordService: KeywordsService,
     @InjectRepository(PostEntity)
     private postRepo: Repository<PostEntity>,
   ) {}
@@ -25,6 +34,7 @@ export class PostService {
     newPost.content = createPostDto.content;
     newPost.password = await hashingPassword(createPostDto.password);
     const item = await this.postRepo.save(newPost);
+    this.keywordService.findKeywordOwnerByPost(newPost);
     return { postId: item.postId, message: '게시글 생성 성공' };
   }
 
@@ -50,34 +60,83 @@ export class PostService {
       .skip((page - 1) * limit)
       .take(limit)
       .getMany();
-    const result = plainToInstance(PostDataDto, item, {
+    const result = plainToInstance(PostSearchDataDto, item, {
       excludeExtraneousValues: true,
     });
     return plainToInstance(PostSearchResponseDto, {
       page: Number(page),
       total: count,
       limit: Number(limit),
-      maxPage: 10,
+      maxPage: Math.ceil(count / Number(limit)),
       results: result,
     });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} post`;
+  async findOne(postId: number): Promise<PostDataResponseDto> {
+    const postItem = await this.postRepo.findOne({
+      where: {
+        postId,
+      },
+    });
+    if (postItem) {
+      return plainToClass(PostDataResponseDto, postItem, {
+        excludeExtraneousValues: true,
+      });
+    } else {
+      throw new NotFoundException(`Post with ID ${postId} 없음`);
+    }
   }
 
-  async update() {
-    // const post = await this.postRepo.findOne({
-    //   where: {
-    //     id: 3,
-    //   },
-    // });
-    // post.content = '1123123';
-    const item = await this.postRepo.update(3, { title: 'testsets' });
-    return `This action updates a  post`;
+  async update(
+    postId: number,
+    updatePostDto: UpdatePostDto,
+  ): Promise<PostDataResponseDto> {
+    const postItem = await this.postRepo.findOne({
+      where: {
+        postId: postId,
+      },
+    });
+    if (postItem) {
+      if (await comparePassword(updatePostDto.password, postItem.password)) {
+        await this.postRepo.update(postItem.postId, {
+          title: updatePostDto.title,
+          author: updatePostDto.author,
+          content: updatePostDto.content,
+          updatedAt: () => 'CURRENT_TIMESTAMP(6)',
+        });
+        return plainToClass(
+          PostDataResponseDto,
+          await this.postRepo.findOne({
+            where: {
+              postId: postId,
+            },
+          }),
+          {
+            excludeExtraneousValues: true,
+          },
+        );
+      } else {
+        throw new ForbiddenException('게시글 비밀번호 맞지않음');
+      }
+    } else {
+      throw new NotFoundException(`Post with ID ${postId} 없음`);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} post`;
+  async remove(postId: number, deletePostDto: DeletePostDto) {
+    const postItem = await this.postRepo.findOne({
+      where: {
+        postId: postId,
+      },
+    });
+    if (postItem) {
+      if (await comparePassword(deletePostDto.password, postItem.password)) {
+        await this.postRepo.delete({ postId: postId });
+      } else {
+        throw new ForbiddenException('게시글 비밀번호 맞지않음');
+      }
+    } else {
+      throw new NotFoundException(`Post with ID ${postId} 없음`);
+    }
   }
 }

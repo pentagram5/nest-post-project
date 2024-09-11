@@ -13,8 +13,12 @@ export class CreatePostDto {
     example: 'test_author',
     maxLength: 100,
   })
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({
+    message: '게시글 작성자 명은 필수 항목입니다.',
+  })
+  @IsString({
+    message: '게시글 작성자 명은 스트링타입만 가능합니다.',
+  })
   @MaxLength(100, {
     message: '게시글 작성자명은 100글자를 넘길 수 없습니다.',
   })
@@ -25,8 +29,12 @@ export class CreatePostDto {
     example: 'test_author',
     maxLength: 255,
   })
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({
+    message: '게시글 제목은 필수 항목입니다.',
+  })
+  @IsString({
+    message: '게시글 제목은 스트링타입만 가능합니다.',
+  })
   @MaxLength(255, {
     message: '게시글 제목은 255글자를 넘길 수 없습니다.',
   })
@@ -36,12 +44,17 @@ export class CreatePostDto {
     description: '게시글 내용',
     example: 'test_contents',
   })
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({
+    message: '게시글 내용은 반드시 포함되어야 합니다.',
+  })
+  @IsString({
+    message: '게시글 내용은 스트링타입만 가능합니다.',
+  })
   content: string;
 
   @ApiProperty({
-    description: '비밀번호 - 해싱처리 ',
+    description:
+      "비밀번호 - '패스워드는 최소 8자 이상이어야 하며, 대문자, 소문자, 숫자, 특수 문자를 각각 1개 이상 포함해야 합니다.' - 해싱처리 ",
     example: 'Qwer1234!@',
     minLength: 8,
   })

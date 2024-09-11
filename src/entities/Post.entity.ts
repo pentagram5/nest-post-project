@@ -27,9 +27,9 @@ export class PostEntity {
   @Column({ type: 'varchar', length: 255 })
   password: string; // 비밀번호 - 해싱처리
 
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at', precision: 6 })
   createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at' })
+  @UpdateDateColumn({ name: 'updated_at', precision: 6 })
   updatedAt: Date;
 }

@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeORMConfig } from './config/typeorm.config';
 import { PostEntity } from './entities/Post.entity';
 import { PostModule } from './post/post.module';
+import { KeywordsEntity } from './entities/Keyword.entity';
+import { KeywordsModule } from './keywords/keywords.module';
 
 @Module({
   imports: [
@@ -19,8 +21,9 @@ import { PostModule } from './post/post.module';
       useFactory: async (configService: ConfigService) =>
         await typeORMConfig(configService),
     }),
-    TypeOrmModule.forFeature([PostEntity]),
+    TypeOrmModule.forFeature([PostEntity, KeywordsEntity]),
     PostModule,
+    KeywordsModule,
   ],
   controllers: [],
   providers: [],
