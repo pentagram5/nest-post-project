@@ -77,7 +77,7 @@ export class KeywordsController {
       '</ul><br>\n',
   })
   @ApiNoContentResponse({
-    description: '게시글 삭제 완료',
+    description: '키워드 삭제 완료',
   })
   @HttpCode(204)
   async remove(
