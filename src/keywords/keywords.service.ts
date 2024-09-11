@@ -1,8 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { KeywordsEntity } from '../entities/Keyword.entity';
 import { InjectRepository } from '@nestjs/typeorm/dist/common/typeorm.decorators';
 import { Repository } from 'typeorm/repository/Repository';
 import { PostEntity } from '../entities/Post.entity';
+import {
+  CreateKeywordsDto,
+  CreateKeywordsResponseDto,
+} from './dto/create-keywords.dto';
+import { DeleteKeywordsDto } from './dto/delete-keywords.dto';
 
 @Injectable()
 export class KeywordsService {
@@ -10,6 +19,41 @@ export class KeywordsService {
     @InjectRepository(KeywordsEntity)
     private keywordsRepository: Repository<KeywordsEntity>,
   ) {}
+
+  async create(
+    createKeywordsDto: CreateKeywordsDto,
+  ): Promise<CreateKeywordsResponseDto> {
+    const findAuthor = await this.keywordsRepository.findOne({
+      where: {
+        author: createKeywordsDto.author,
+      },
+    });
+    if (findAuthor) {
+      throw new ConflictException('동일한 작성자가 이미 존재합니다.');
+    } else {
+      const newKeywords = new KeywordsEntity();
+      newKeywords.author = createKeywordsDto.author;
+      newKeywords.keyword = createKeywordsDto.keyword;
+      const item = await this.keywordsRepository.save(newKeywords);
+      return { keywordId: item.keywordId, message: '알림 키워드 등록 성공' };
+    }
+  }
+
+  async remove(keywordId: number, deleteKeywordDto: DeleteKeywordsDto) {
+    const keywordItem = await this.keywordsRepository.findOne({
+      where: {
+        keywordId,
+        author: deleteKeywordDto.author,
+      },
+    });
+    if (keywordItem) {
+      await this.keywordsRepository.delete({
+        keywordId: keywordItem.keywordId,
+      });
+    } else {
+      throw new NotFoundException(`해당 키워드 아이템 없음`);
+    }
+  }
 
   private async searchKeywordOwnerByContents(content: string) {
     const query = this.keywordsRepository.createQueryBuilder('keywords');
@@ -21,7 +65,7 @@ export class KeywordsService {
 
   /**
    * create된 post객체를 전달받아
-   * content 기반 키워드 조회 함수 호출
+   * content 기반 키워드 조회 함수 호출.
    * 조회된 결과는 로깅으로 알림기능 대체
    * @param {PostEntity} postItem create된 post객체
    * */
