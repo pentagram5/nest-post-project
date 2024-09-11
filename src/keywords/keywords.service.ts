@@ -19,6 +19,12 @@ export class KeywordsService {
     return await query.getMany();
   }
 
+  /**
+   * create된 post객체를 전달받아
+   * content 기반 키워드 조회 함수 호출
+   * 조회된 결과는 로깅으로 알림기능 대체
+   * @param {PostEntity} postItem create된 post객체
+   * */
   async findKeywordOwnerByPost(postItem: PostEntity) {
     const items = await this.searchKeywordOwnerByContents(postItem.content);
     items.map((item) => {

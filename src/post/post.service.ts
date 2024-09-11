@@ -34,7 +34,7 @@ export class PostService {
     newPost.content = createPostDto.content;
     newPost.password = await hashingPassword(createPostDto.password);
     const item = await this.postRepo.save(newPost);
-    this.keywordService.findKeywordOwnerByPost(newPost);
+    void this.keywordService.findKeywordOwnerByPost(newPost);
     return { postId: item.postId, message: '게시글 생성 성공' };
   }
 
