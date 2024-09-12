@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import { Expose, Transform, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { PostEntity } from '../../entities/Post.entity';
+import { PostEntity } from '../../../entities/Post.entity';
 
 export class PostSearchDataDto extends PostEntity {
   @ApiProperty({ description: '게시글 id' })

@@ -16,7 +16,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { Http4XXDto, HttpError400Dto } from '../dto/http-error.dto';
+import { Http4XXDto, HttpError400Dto } from '../../dto/http-error.dto';
 import { KeywordsService } from './keywords.service';
 import {
   CreateKeywordsDto,

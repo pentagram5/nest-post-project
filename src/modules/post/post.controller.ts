@@ -28,7 +28,7 @@ import {
   PostSearchResponseDto,
 } from './dto/read-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { Http4XXDto, HttpError400Dto } from '../dto/http-error.dto';
+import { Http4XXDto, HttpError400Dto } from '../../dto/http-error.dto';
 import { DeletePostDto } from './dto/delete-post.dto';
 
 @Controller('post')

@@ -3,11 +3,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PostEntity } from '../entities/Post.entity';
+import { PostEntity } from '../../entities/Post.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreatePostDto, CreatePostResponseDto } from './dto/create-post.dto';
-import { comparePassword, hashingPassword } from '../util/bcryptUtil';
+import { comparePassword, hashingPassword } from '../../util/bcryptUtil';
 import {
   PostDataResponseDto,
   PostSearchDataDto,
